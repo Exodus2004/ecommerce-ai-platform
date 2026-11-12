@@ -528,6 +528,28 @@ body {
     display: block;
 }
 
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mongo-log-btn {
+    background: #059669;
+    color: #ffffff;
+    border: none;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.55rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mongo-log-btn:hover {
+    background: #10b981;
+}
+
 .chat-close-btn {
     background: none;
     border: none;

@@ -183,6 +183,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 5. Chatbot Widget Logic
+    const mongoModal = document.getElementById("mongo-modal");
+    const closeMongoModal = document.getElementById("close-mongo-modal");
+    const mongoLogsContent = document.getElementById("mongo-logs-content");
+    const viewMongoLogsBtn = document.getElementById("view-mongo-logs-btn");
+
+    if (viewMongoLogsBtn) {
+        viewMongoLogsBtn.addEventListener("click", async () => {
+            mongoModal.style.display = "flex";
+            mongoLogsContent.innerHTML = `<div class="loading-spinner">Fetching live documents from MongoDB...</div>`;
+            try {
+                const res = await fetch("/api/chat/history?limit=15");
+                const data = await res.json();
+                if (!data.history || data.history.length === 0) {
+                    mongoLogsContent.innerHTML = `<p style="padding: 1.5rem; text-align: center; color: #64748b;">No conversations recorded yet. Send a message in the chat to see documents appear here!</p>`;
+                    return;
+                }
+                mongoLogsContent.innerHTML = data.history.map((log, idx) => `
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; margin-bottom: 0.75rem; font-family: monospace; font-size: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; color: #059669; font-weight: bold;">
+                            <span>Document #${data.history.length - idx} (Storage: ${log.storage || 'MongoDB'})</span>
+                            <span>${log.timestamp ? log.timestamp.split('T')[1].slice(0, 8) + ' UTC' : ''}</span>
+                        </div>
+                        <div style="margin-bottom: 0.3rem;"><strong>User:</strong> "${log.user_message}"</div>
+                        <div style="color: #334155;"><strong>Bot:</strong> ${log.bot_reply.slice(0, 150)}...</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                mongoLogsContent.innerHTML = `<p style="color: #ef4444;">Failed to fetch MongoDB logs: ${err.message}</p>`;
+            }
+        });
+    }
+
+    if (closeMongoModal) {
+        closeMongoModal.addEventListener("click", () => {
+            mongoModal.style.display = "none";
+        });
+    }
+
+    window.addEventListener("click", (e) => {
+        if (e.target === mongoModal) {
+            mongoModal.style.display = "none";
+        }
+    });
+
     chatToggleBtn.addEventListener("click", () => {
         if (chatWindow.style.display === "none") {
             chatWindow.style.display = "flex";
