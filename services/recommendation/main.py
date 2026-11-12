@@ -56,7 +56,19 @@ def startup_event():
         recommender = AIRecommender(products)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "AI Recommendation Microservice",
+        "status": "running",
+        "port": 8003,
+        "available_endpoints": ["/recommend/{id}", "/health"],
+        "web_storefront": "http://localhost:8000"
+    }
+
+
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "healthy",
@@ -67,6 +79,7 @@ def health():
 
 
 @app.get("/recommend/{product_id}")
+@app.get("/api/recommend/{product_id}")
 def get_recommendations(product_id: int):
     global recommender
     if not recommender:

@@ -58,7 +58,19 @@ def startup_event():
         search_engine = AISearchEngine(products)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "AI Search Optimization Microservice",
+        "status": "running",
+        "port": 8002,
+        "available_endpoints": ["/search?q=...", "/health"],
+        "web_storefront": "http://localhost:8000"
+    }
+
+
 @app.get("/health")
+@app.get("/api/health")
 def health():
     return {
         "status": "healthy",
@@ -69,6 +81,7 @@ def health():
 
 
 @app.get("/search")
+@app.get("/api/search")
 def search(
     q: str = Query("", description="Query string"),
     category: str = Query("all", description="Category filter"),

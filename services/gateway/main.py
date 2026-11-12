@@ -11,6 +11,7 @@ import httpx
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 
 # Microservice Discovery URLs (Kubernetes Service DNS / Localhost)
@@ -27,6 +28,30 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Friendly 404 handler replacing raw {"detail":"Not Found"}
+@app.exception_handler(StarletteHTTPException)
+async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == 404:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "Route Not Found",
+                "requested_path": request.url.path,
+                "hint": "Open http://localhost:8000 in your browser to view the storefront UI, or http://localhost:8000/docs for Swagger API documentation.",
+                "available_endpoints": [
+                    "GET  /                         -> Storefront Web UI",
+                    "GET  /products                 -> Product catalog (also /api/products)",
+                    "GET  /search?q=laptop          -> AI semantic search (also /api/search)",
+                    "GET  /recommend/{product_id}   -> AI recommendations (also /api/recommend/{id})",
+                    "POST /chat                     -> AI shopping assistant (also /api/chat)",
+                    "GET  /chat/history             -> MongoDB conversation history (also /history, /api/chat/history)",
+                    "GET  /health                   -> Cluster health check (also /api/health)",
+                    "GET  /docs                     -> Swagger API UI"
+                ]
+            }
+        )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
 # Mount static web frontend
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
@@ -42,6 +67,7 @@ def serve_home():
 
 
 @app.get("/api/health")
+@app.get("/health")
 async def health_check():
     """
     Cluster Health Probe:
@@ -87,6 +113,8 @@ async def health_check():
 
 # Route 1: Proxy to Catalog Microservice
 @app.get("/api/products")
+@app.get("/products")
+@app.get("/catalog")
 async def get_products(category: Optional[str] = None):
     url = f"{CATALOG_URL}/products"
     if category and category.lower() != "all":
@@ -101,6 +129,7 @@ async def get_products(category: Optional[str] = None):
 
 # Route 2: Proxy to AI Search Optimization Microservice
 @app.get("/api/search")
+@app.get("/search")
 async def search_products(
     q: str = Query("", description="Search query string"),
     category: str = Query("all", description="Product category filter"),
@@ -123,6 +152,7 @@ async def search_products(
 
 # Route 3: Proxy to AI Recommendation Microservice
 @app.get("/api/recommend/{product_id}")
+@app.get("/recommend/{product_id}")
 async def get_recommendations(product_id: int):
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
@@ -134,6 +164,7 @@ async def get_recommendations(product_id: int):
 
 # Route 4: Proxy to AI Chatbot Microservice
 @app.post("/api/chat")
+@app.post("/chat")
 async def chat_with_ai(payload: ChatPayload):
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:
@@ -145,6 +176,9 @@ async def chat_with_ai(payload: ChatPayload):
 
 # Route 5: View Chatbot History Stored in MongoDB
 @app.get("/api/chat/history")
+@app.get("/chat/history")
+@app.get("/history")
+@app.get("/api/history")
 async def get_chat_history(limit: int = Query(10)):
     async with httpx.AsyncClient(timeout=5.0) as client:
         try:

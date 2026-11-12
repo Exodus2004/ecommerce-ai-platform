@@ -32,7 +32,20 @@ def startup_event():
     init_db()
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "Product Catalog Microservice",
+        "status": "running",
+        "port": 8001,
+        "database": db_type,
+        "available_endpoints": ["/products", "/products/{id}", "/categories", "/health"],
+        "web_storefront": "http://localhost:8000"
+    }
+
+
 @app.get("/health")
+@app.get("/api/health")
 def health():
     products = get_all_products()
     return {
@@ -46,12 +59,14 @@ def health():
 
 
 @app.get("/products")
+@app.get("/api/products")
 def get_products(category: Optional[str] = None):
     products = get_all_products(category=category)
     return {"total": len(products), "products": products, "database": db_type}
 
 
 @app.get("/products/{product_id}")
+@app.get("/api/products/{product_id}")
 def get_product(product_id: int):
     prod = get_product_by_id(product_id)
     if not prod:
@@ -60,6 +75,7 @@ def get_product(product_id: int):
 
 
 @app.get("/categories")
+@app.get("/api/categories")
 def get_categories():
     categories = get_all_categories()
     return {"categories": categories}

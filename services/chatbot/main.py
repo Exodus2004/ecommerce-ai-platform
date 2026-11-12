@@ -66,7 +66,20 @@ def startup_event():
         chatbot = AIChatbot(products)
 
 
+@app.get("/")
+def root():
+    return {
+        "service": "AI Chatbot Microservice",
+        "status": "running",
+        "port": 8004,
+        "database": "MongoDB",
+        "available_endpoints": ["POST /chat", "GET /chat/history", "GET /health"],
+        "web_storefront": "http://localhost:8000"
+    }
+
+
 @app.get("/health")
+@app.get("/api/health")
 def health():
     db_info = get_db_status()
     return {
@@ -80,6 +93,7 @@ def health():
 
 
 @app.post("/chat")
+@app.post("/api/chat")
 def chat(request: ChatRequest):
     global chatbot
     if not chatbot:
@@ -99,6 +113,8 @@ def chat(request: ChatRequest):
 
 
 @app.get("/chat/history")
+@app.get("/api/chat/history")
+@app.get("/history")
 def get_history(limit: int = Query(10, description="Max number of logs to return")):
     """Returns conversation logs stored in MongoDB"""
     history = get_chat_history(limit=limit)
