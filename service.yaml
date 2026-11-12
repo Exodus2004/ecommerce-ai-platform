@@ -1,0 +1,27 @@
+# ====================================================================
+# Kubernetes Service: External LoadBalancer
+# ====================================================================
+# Exposes the ShopSmart AI application to the public internet / external users.
+# Provisions a cloud Public IP (in Azure AKS / AWS EKS / GCP GKE) and evenly
+# balances incoming HTTP requests across all healthy pod replicas.
+# ====================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopsmart-ai-service
+  labels:
+    app: shopsmart-ai
+spec:
+  # LoadBalancer: Exposes a single public IP to the outside world
+  type: LoadBalancer
+
+  # Selector: Connects this Service to pods with label 'app: shopsmart-ai'
+  selector:
+    app: shopsmart-ai
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80             # The port external users connect to (standard HTTP)
+      targetPort: 8000     # The internal container port where FastAPI is listening

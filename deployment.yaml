@@ -1,0 +1,63 @@
+# ====================================================================
+# Kubernetes Deployment: ShopSmart AI Application
+# ====================================================================
+# Manages multiple container replicas, handles automated rolling updates,
+# restarts crashed pods automatically (self-healing), and performs health checks.
+# ====================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopsmart-ai-deployment
+  labels:
+    app: shopsmart-ai
+    tier: backend-frontend
+spec:
+  # High Availability: 2 identical pod replicas running in parallel
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shopsmart-ai
+  template:
+    metadata:
+      labels:
+        app: shopsmart-ai
+    spec:
+      containers:
+        - name: shopsmart-ai-container
+          # In local Minikube / Docker: "shopsmart-ai:v1"
+          # In Azure AKS: "<your-acr-name>.azurecr.io/shopsmart-ai:v1"
+          image: shopsmart-ai:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          
+          # Resource Governance: Prevents a single pod from starving the cluster
+          resources:
+            requests:
+              cpu: "100m"         # 0.1 CPU core reserved
+              memory: "128Mi"     # 128 MB RAM reserved
+            limits:
+              cpu: "500m"         # Max 0.5 CPU core allowed
+              memory: "512Mi"     # Max 512 MB RAM allowed
+
+          # Self-Healing: Restarts container if the app freezes or enters a deadlock
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Traffic Gatekeeper: Only sends user traffic when the app is completely ready
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
