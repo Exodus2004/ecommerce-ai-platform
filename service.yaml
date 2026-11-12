@@ -1,27 +1,106 @@
 # ====================================================================
-# Kubernetes Service: External LoadBalancer
+# Kubernetes Services: 5 Microservices Networking
 # ====================================================================
-# Exposes the ShopSmart AI application to the public internet / external users.
-# Provisions a cloud Public IP (in Azure AKS / AWS EKS / GCP GKE) and evenly
-# balances incoming HTTP requests across all healthy pod replicas.
+# - 1 Public Service (api-gateway-service) exposed via LoadBalancer (Port 80)
+# - 4 Private Internal Services (ClusterIP) for secure microservice-to-microservice traffic
 # ====================================================================
 
+# --------------------------------------------------------------------
+# 1. API Gateway Service (Public LoadBalancer)
+# --------------------------------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
-  name: shopsmart-ai-service
+  name: api-gateway-service
   labels:
-    app: shopsmart-ai
+    app: api-gateway
 spec:
-  # LoadBalancer: Exposes a single public IP to the outside world
+  # Type LoadBalancer: Provisions a public Cloud IP for external users
   type: LoadBalancer
-
-  # Selector: Connects this Service to pods with label 'app: shopsmart-ai'
   selector:
-    app: shopsmart-ai
-
+    app: api-gateway
   ports:
     - name: http
       protocol: TCP
-      port: 80             # The port external users connect to (standard HTTP)
-      targetPort: 8000     # The internal container port where FastAPI is listening
+      port: 80             # Public internet port
+      targetPort: 8000     # Gateway container port
+
+---
+# --------------------------------------------------------------------
+# 2. Product Catalog Internal Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  labels:
+    app: catalog-service
+spec:
+  type: ClusterIP
+  selector:
+    app: catalog-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8001
+      targetPort: 8001
+
+---
+# --------------------------------------------------------------------
+# 3. AI Search Optimization Internal Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+  labels:
+    app: search-service
+spec:
+  type: ClusterIP
+  selector:
+    app: search-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8002
+      targetPort: 8002
+
+---
+# --------------------------------------------------------------------
+# 4. AI Recommendation Internal Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendation-service
+  labels:
+    app: recommendation-service
+spec:
+  type: ClusterIP
+  selector:
+    app: recommendation-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8003
+      targetPort: 8003
+
+---
+# --------------------------------------------------------------------
+# 5. AI Chatbot Internal Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-service
+  labels:
+    app: chatbot-service
+spec:
+  type: ClusterIP
+  selector:
+    app: chatbot-service
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8004
+      targetPort: 8004

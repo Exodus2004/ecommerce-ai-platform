@@ -1,63 +1,237 @@
 # ====================================================================
-# Kubernetes Deployment: ShopSmart AI Application
+# Kubernetes Deployments: 5 Microservices Architecture
 # ====================================================================
-# Manages multiple container replicas, handles automated rolling updates,
-# restarts crashed pods automatically (self-healing), and performs health checks.
+# 1. api-gateway               (Edge Gateway & Web UI)
+# 2. catalog-service           (Product Data & Inventory)
+# 3. search-service            (AI Semantic Search Optimization)
+# 4. recommendation-service   (AI Content-Based Recommender)
+# 5. chatbot-service          (AI Conversational Shopping Concierge)
 # ====================================================================
 
+# --------------------------------------------------------------------
+# 1. API Gateway Microservice Deployment
+# --------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shopsmart-ai-deployment
+  name: api-gateway-deployment
   labels:
-    app: shopsmart-ai
-    tier: backend-frontend
+    app: api-gateway
+    tier: frontend-gateway
 spec:
-  # High Availability: 2 identical pod replicas running in parallel
   replicas: 2
   selector:
     matchLabels:
-      app: shopsmart-ai
+      app: api-gateway
   template:
     metadata:
       labels:
-        app: shopsmart-ai
+        app: api-gateway
     spec:
       containers:
-        - name: shopsmart-ai-container
-          # In local Minikube / Docker: "shopsmart-ai:v1"
-          # In Azure AKS: "<your-acr-name>.azurecr.io/shopsmart-ai:v1"
-          image: shopsmart-ai:v1
+        - name: api-gateway
+          image: shopsmart-gateway:v1
           imagePullPolicy: IfNotPresent
           ports:
-            - name: http
-              containerPort: 8000
-          
-          # Resource Governance: Prevents a single pod from starving the cluster
+            - containerPort: 8000
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+            - name: SEARCH_SERVICE_URL
+              value: "http://search-service:8002"
+            - name: RECOMMENDATION_SERVICE_URL
+              value: "http://recommendation-service:8003"
+            - name: CHATBOT_SERVICE_URL
+              value: "http://chatbot-service:8004"
           resources:
             requests:
-              cpu: "100m"         # 0.1 CPU core reserved
-              memory: "128Mi"     # 128 MB RAM reserved
+              cpu: "100m"
+              memory: "128Mi"
             limits:
-              cpu: "500m"         # Max 0.5 CPU core allowed
-              memory: "512Mi"     # Max 512 MB RAM allowed
-
-          # Self-Healing: Restarts container if the app freezes or enters a deadlock
+              cpu: "500m"
+              memory: "512Mi"
           livenessProbe:
             httpGet:
               path: /api/health
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-
-          # Traffic Gatekeeper: Only sends user traffic when the app is completely ready
           readinessProbe:
             httpGet:
               path: /api/health
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 2
+
+---
+# --------------------------------------------------------------------
+# 2. Product Catalog Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service-deployment
+  labels:
+    app: catalog-service
+    tier: core-domain
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+        - name: catalog-service
+          image: shopsmart-catalog:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 3. AI Search Optimization Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service-deployment
+  labels:
+    app: search-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+    spec:
+      containers:
+        - name: search-service
+          image: shopsmart-search:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8002
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 4. AI Recommendation Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service-deployment
+  labels:
+    app: recommendation-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommendation-service
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+    spec:
+      containers:
+        - name: recommendation-service
+          image: shopsmart-recommendation:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8003
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 5. AI Chatbot Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-service-deployment
+  labels:
+    app: chatbot-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chatbot-service
+  template:
+    metadata:
+      labels:
+        app: chatbot-service
+    spec:
+      containers:
+        - name: chatbot-service
+          image: shopsmart-chatbot:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8004
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 15
+            periodSeconds: 10

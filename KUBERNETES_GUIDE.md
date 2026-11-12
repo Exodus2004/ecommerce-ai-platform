@@ -1,54 +1,36 @@
-# 🚢 Kubernetes Deployment Guide: ShopSmart AI
+# 🚢 Kubernetes 5-Microservices Deployment Guide
 
-> **Goal**: Step-by-step instructions to build the Docker image, deploy the application to Kubernetes, and access it through the public **LoadBalancer**.
+> **Project**: ShopSmart AI E-Commerce Platform  
+> **Topology**: 5 Distinct Microservices, 10 Pod Replicas, Public LoadBalancer
 
 ---
 
-## 🧭 The Complete Architecture
+## 🏗️ Kubernetes Cluster Topology
 
 ```
-                      [ External Internet User ]
+                      [ External Internet Traffic ]
                                   │
                                   ▼ (HTTP Port 80)
                 ┌───────────────────────────────────┐
                 │ Kubernetes Service (LoadBalancer) │
-                │ Name: shopsmart-ai-service        │
+                │ Name: api-gateway-service         │
                 └─────────────────┬─────────────────┘
                                   │ (targetPort: 8000)
                  ┌────────────────┴────────────────┐
                  ▼                                 ▼
-      [ Pod Replica #1 ]                [ Pod Replica #2 ]
-      • FastAPI AI Backend              • FastAPI AI Backend
-      • Semantic Vector Search          • Semantic Vector Search
-      • Recommender Engine              • Recommender Engine
-      • Interactive Chatbot             • Interactive Chatbot
+      [ Pod: api-gateway-1 ]            [ Pod: api-gateway-2 ]
+                 │
+                 ├──► http://catalog-service:8001         (ClusterIP)
+                 ├──► http://search-service:8002          (ClusterIP)
+                 ├──► http://recommendation-service:8003  (ClusterIP)
+                 └──► http://chatbot-service:8004         (ClusterIP)
 ```
 
 ---
 
-## 🚀 Step-by-Step Deployment Commands
+## 🚀 Deployment Commands
 
-### Step 1: Build the Docker Image
-Inside the project root directory:
-
-```bash
-docker build -t shopsmart-ai:v1 .
-```
-
-*(If deploying to Azure Kubernetes Service (AKS), tag and push to your Azure Container Registry):*
-```bash
-# Tag for your Azure Container Registry (ACR)
-docker tag shopsmart-ai:v1 <your-acr-name>.azurecr.io/shopsmart-ai:v1
-
-# Push to ACR
-docker push <your-acr-name>.azurecr.io/shopsmart-ai:v1
-```
-
----
-
-### Step 2: Deploy to Kubernetes
-
-Deploy both the **Deployment** and the **LoadBalancer Service** with one command:
+### Step 1: Deploy All 5 Microservices (10 Pods)
 
 ```bash
 kubectl apply -f deployment.yaml
@@ -57,64 +39,59 @@ kubectl apply -f service.yaml
 
 ---
 
-### Step 3: Verify Pods & Health Probes
-
-Check that both pod replicas are created and running:
+### Step 2: Verify Pods
 
 ```bash
-kubectl get pods -l app=shopsmart-ai
+kubectl get pods
 ```
 
 **Expected Output:**
 ```text
-NAME                                       READY   STATUS    RESTARTS   AGE
-shopsmart-ai-deployment-64d898bfcb-7x8zk   1/1     Running   0          25s
-shopsmart-ai-deployment-64d898bfcb-m9r2l   1/1     Running   0          25s
+NAME                                             READY   STATUS    RESTARTS   AGE
+api-gateway-deployment-7bb9d4797d-6l9fx          1/1     Running   0          30s
+api-gateway-deployment-7bb9d4797d-mpxj8          1/1     Running   0          30s
+catalog-service-deployment-859846d5c6-c9w42      1/1     Running   0          30s
+catalog-service-deployment-859846d5c6-q2r11      1/1     Running   0          30s
+search-service-deployment-55d8869ff9-7gjk3       1/1     Running   0          30s
+search-service-deployment-55d8869ff9-w991z       1/1     Running   0          30s
+recommendation-service-deployment-74f4b9c9f4-x7  1/1     Running   0          30s
+recommendation-service-deployment-74f4b9c9f4-zp  1/1     Running   0          30s
+chatbot-service-deployment-64d898bfcb-81k2m      1/1     Running   0          30s
+chatbot-service-deployment-64d898bfcb-pt99a      1/1     Running   0          30s
 ```
-
-*(Notice: `READY 1/1` means our `/api/health` Readiness Probe passed successfully!)*
 
 ---
 
-### Step 4: Get the External LoadBalancer Public IP
-
-Check the status of your LoadBalancer:
+### Step 3: Verify the 5 Services
 
 ```bash
-kubectl get service shopsmart-ai-service
+kubectl get svc
 ```
 
-**Expected Output (in Azure AKS or Cloud):**
+**Expected Output:**
 ```text
-NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)        AGE
-shopsmart-ai-service   LoadBalancer   10.0.182.45    20.124.50.80    80:31250/TCP   45s
+NAME                     TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)        AGE
+api-gateway-service      LoadBalancer   10.0.182.45    20.124.50.80    80:31250/TCP   45s
+catalog-service          ClusterIP      10.0.182.46    <none>          8001/TCP       45s
+search-service           ClusterIP      10.0.182.47    <none>          8002/TCP       45s
+recommendation-service   ClusterIP      10.0.182.48    <none>          8003/TCP       45s
+chatbot-service          ClusterIP      10.0.182.49    <none>          8004/TCP       45s
 ```
 
-* Open your browser and navigate to: **`http://20.124.50.80`**  
-  *(Replace with your actual `EXTERNAL-IP`!)*
-
-#### 💡 If Testing on Local Minikube:
-Local Minikube doesn't have an Azure cloud router, so run:
-```bash
-minikube service shopsmart-ai-service
-# Or in a second terminal:
-minikube tunnel
-```
+* Navigate to: **`http://20.124.50.80`** *(or whatever `EXTERNAL-IP` Azure assigns)*.
 
 ---
 
 ## 🎯 4 Questions Your Instructor Will Ask & How to Answer
 
-### 1. "Why did you use `replicas: 2` in `deployment.yaml`?"
-> **Answer**: *"For High Availability and zero downtime. If Pod #1 crashes or is restarting during an update, Kubernetes automatically routes all user traffic to Pod #2 without any interruption for the customer."*
+### 1. "How do your microservices communicate with each other in Kubernetes?"
+> **Answer**: *"Sir, they communicate using **Kubernetes CoreDNS Service Discovery**. The API Gateway accesses downstream services using internal DNS names: `http://catalog-service:8001`, `http://search-service:8002`, `http://recommendation-service:8003`, and `http://chatbot-service:8004`."*
 
-### 2. "In `service.yaml`, what is the difference between `port: 80` and `targetPort: 8000`?"
-> **Answer**: *"Port 80 is the external public HTTP port that customers connect to. TargetPort 8000 is the internal private port inside the container where our FastAPI web server is actively listening."*
+### 2. "Why is only the API Gateway a LoadBalancer while the others are ClusterIP?"
+> **Answer**: *"For **Security & Cloud Cost Optimization**. Internal services (Catalog, AI Search, Recommender, Chatbot) should never be directly exposed to the public internet. By keeping them as `ClusterIP`, they are completely isolated inside the private cluster network. Only the API Gateway is exposed via `LoadBalancer` on port 80 to accept customer web requests."*
 
-### 3. "What is the purpose of the Liveness and Readiness probes in your deployment?"
-> **Answer**: 
-> * *"The **Readiness Probe** prevents user traffic from hitting a pod until its AI vector catalog has finished loading into memory."*
-> * *"The **Liveness Probe** continuously monitors `/api/health`. If the Python process ever freezes or enters a deadlock, Kubernetes automatically kills and restarts the pod."*
+### 3. "How does scaling work if AI Search gets high traffic?"
+> **Answer**: *"Because each service is an independent microservice, we can scale `search-service-deployment` from 2 pods up to 20 pods independently using an HPA (Horizontal Pod Autoscaler) without wasting money scaling the Catalog or Chatbot services!"*
 
-### 4. "Why did you use `type: LoadBalancer` instead of `ClusterIP`?"
-> **Answer**: *"ClusterIP only allows internal traffic inside the Kubernetes cluster. `type: LoadBalancer` provisions a public cloud IP address in Azure/AWS so external web customers can access our store over the internet."*
+### 4. "How do you monitor the health of all 5 microservices?"
+> **Answer**: *"Our API Gateway exposes an aggregated health check endpoint at `/api/health`. When queried, it performs parallel health probes across all 4 downstream services and returns an overall cluster status report."*

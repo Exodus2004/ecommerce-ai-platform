@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSmart AI — Intelligent E-Commerce Platform</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="logo-icon">🛍️</span>
+                <div>
+                    <h1 class="logo-title">ShopSmart AI</h1>
+                    <p class="logo-subtitle">AI Search • Smart Recommendations • Autonomous Concierge</p>
+                </div>
+            </div>
+            <div class="nav-status">
+                <span class="status-indicator"></span>
+                <span class="status-text" id="system-status">Kubernetes Ready • Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero / Search Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h2 class="hero-headline">Find exactly what you want with AI</h2>
+            <p class="hero-desc">Powered by Vector Embeddings & TF-IDF Cosine Similarity</p>
+
+            <div class="search-box-wrapper">
+                <div class="search-input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Try: 'running shoes under $60', 'budget laptop', or 'anc headphones'..." autocomplete="off">
+                    <button id="search-btn" class="primary-btn">AI Search</button>
+                    <button id="clear-btn" class="secondary-btn" style="display:none;">Clear</button>
+                </div>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="category-pills" id="category-pills">
+                <button class="pill active" data-category="all">All Products</button>
+                <button class="pill" data-category="Laptops & Computers">💻 Laptops</button>
+                <button class="pill" data-category="Audio & Headphones">🎧 Audio</button>
+                <button class="pill" data-category="Footwear & Running">👟 Footwear</button>
+                <button class="pill" data-category="Smartwatches & Wearables">⌚ Wearables</button>
+                <button class="pill" data-category="Home & Kitchen">☕ Kitchen</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Catalog View -->
+    <main class="main-container">
+        <div class="catalog-header">
+            <div>
+                <h3 id="results-heading">Featured Products</h3>
+                <p id="results-count" class="results-subtext">Showing all items</p>
+            </div>
+            <div class="price-filter">
+                <label for="price-limit">Max Price:</label>
+                <select id="price-limit">
+                    <option value="">Any Price</option>
+                    <option value="50">Under $50</option>
+                    <option value="100">Under $100</option>
+                    <option value="250">Under $250</option>
+                    <option value="500">Under $500</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Product Cards Grid -->
+        <div class="product-grid" id="product-grid">
+            <div class="loading-spinner">Loading AI catalog...</div>
+        </div>
+    </main>
+
+    <!-- Recommendation Modal -->
+    <div class="modal-backdrop" id="rec-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 class="modal-title">✨ AI Recommendations</h3>
+                    <p class="modal-subtitle" id="modal-subtitle">Products similar to selected item</p>
+                </div>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-recommendations">
+                <!-- Recommendations will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Chatbot Widget -->
+    <div class="chatbot-widget" id="chatbot-widget">
+        <!-- Chat trigger circle button -->
+        <button class="chat-toggle-btn" id="chat-toggle-btn">
+            <span class="chat-bubble-icon">💬</span>
+            <span class="chat-btn-label">AI Concierge</span>
+        </button>
+
+        <!-- Chat window popup -->
+        <div class="chat-window" id="chat-window" style="display:none;">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <span class="bot-avatar">🤖</span>
+                    <div>
+                        <h4 class="chat-title">ShopSmart AI Assistant</h4>
+                        <span class="chat-subtitle">Self-Contained Local Engine • Zero API Keys</span>
+                    </div>
+                </div>
+                <button class="chat-close-btn" id="chat-close-btn">&times;</button>
+            </div>
+
+            <!-- Quick Suggestion Prompts -->
+            <div class="quick-prompts">
+                <button class="prompt-chip" data-query="Show me running shoes under $60">👟 Running shoes < $60</button>
+                <button class="prompt-chip" data-query="What is your return policy?">📦 Return Policy</button>
+                <button class="prompt-chip" data-query="Recommend a budget student laptop">💻 Budget Laptop</button>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <div class="message-bubble">
+                        👋 Hi! I am your AI Shopping Assistant. Ask me to find products, recommend items within your budget, or answer store policies!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Bar -->
+            <form class="chat-input-area" id="chat-form">
+                <input type="text" id="chat-input" placeholder="Type your question or product search..." autocomplete="off">
+                <button type="submit" class="chat-send-btn">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

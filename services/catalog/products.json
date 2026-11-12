@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "title": "AeroBook Pro 15 Ultra Laptop",
+    "category": "Laptops & Computers",
+    "price": 899.99,
+    "rating": 4.8,
+    "brand": "TechZen",
+    "description": "Ultra-thin lightweight 15-inch laptop with M2 octa-core processor, 16GB RAM, 512GB SSD, and 18-hour battery life. Perfect for software engineers and college students.",
+    "tags": ["laptop", "computer", "lightweight", "ultrabook", "student", "programming", "fast", "battery"]
+  },
+  {
+    "id": 2,
+    "title": "ZenBook Budget Student Laptop",
+    "category": "Laptops & Computers",
+    "price": 449.00,
+    "rating": 4.4,
+    "brand": "TechZen",
+    "description": "Affordable portable laptop with 8GB RAM, 256GB SSD, full HD IPS screen, and ergonomic backlit keyboard for school, study, and daily browsing.",
+    "tags": ["laptop", "budget", "affordable", "student", "portable", "cheap", "office", "homework"]
+  },
+  {
+    "id": 3,
+    "title": "Titan RTX Gaming Rig 16-Inch",
+    "category": "Laptops & Computers",
+    "price": 1499.99,
+    "rating": 4.9,
+    "brand": "ApexPredator",
+    "description": "High performance gaming laptop powered by RTX 4070 GPU, Intel Core i9, 32GB DDR5 RAM, and 240Hz QHD display with RGB mechanical switches.",
+    "tags": ["gaming", "laptop", "rtx", "gpu", "heavy-duty", "vr", "rgb", "fast"]
+  },
+  {
+    "id": 4,
+    "title": "SonicQuiet Pro Noise-Cancelling Headphones",
+    "category": "Audio & Headphones",
+    "price": 129.99,
+    "rating": 4.7,
+    "brand": "SoundPulse",
+    "description": "Over-ear wireless Bluetooth headphones with active noise cancellation (ANC), deep bass, 40-hour battery life, and crystal-clear microphone for calls.",
+    "tags": ["headphones", "anc", "noise-cancelling", "wireless", "bluetooth", "music", "mic", "over-ear"]
+  },
+  {
+    "id": 5,
+    "title": "BudgetBeats Wireless Earbuds",
+    "category": "Audio & Headphones",
+    "price": 34.99,
+    "rating": 4.3,
+    "brand": "SoundPulse",
+    "description": "Pocket-sized true wireless earbuds with IPX5 sweat resistance, touch controls, deep bass acoustics, and 28-hour playtime with USB-C case.",
+    "tags": ["earbuds", "budget", "cheap", "affordable", "wireless", "bluetooth", "running", "gym"]
+  },
+  {
+    "id": 6,
+    "title": "StudioMaster Open-Back Reference Headphones",
+    "category": "Audio & Headphones",
+    "price": 249.00,
+    "rating": 4.9,
+    "brand": "AudioPhile",
+    "description": "Professional studio open-back headphones engineered for music producers, audio engineers, and audiophiles seeking neutral, precise soundstage.",
+    "tags": ["headphones", "studio", "audiophile", "music", "recording", "wired", "professional"]
+  },
+  {
+    "id": 7,
+    "title": "AeroStride Velocity Running Shoes",
+    "category": "Footwear & Running",
+    "price": 59.99,
+    "rating": 4.6,
+    "brand": "SpeedFlow",
+    "description": "Lightweight breathable mesh road running shoes with shock-absorbing foam cushioning and high-traction rubber soles for marathon and jogging.",
+    "tags": ["shoes", "running", "sneakers", "jogging", "athletics", "lightweight", "sports", "marathon"]
+  },
+  {
+    "id": 8,
+    "title": "CloudStep Daily Walking Sneakers",
+    "category": "Footwear & Running",
+    "price": 42.50,
+    "rating": 4.5,
+    "brand": "SpeedFlow",
+    "description": "Super comfortable memory foam slip-on sneakers for all-day standing, walking, casual travel, and daily errands with arch support.",
+    "tags": ["shoes", "walking", "sneakers", "comfortable", "slip-on", "budget", "casual", "arch-support"]
+  },
+  {
+    "id": 9,
+    "title": "TrailBlazer Waterproof Hiking Boots",
+    "category": "Footwear & Running",
+    "price": 119.00,
+    "rating": 4.8,
+    "brand": "MountainPeak",
+    "description": "Heavy-duty waterproof leather hiking boots with Gore-Tex lining, reinforced steel toe cap, and vibram grip soles for rough mountain terrain.",
+    "tags": ["boots", "hiking", "waterproof", "trail", "outdoor", "climbing", "trekking"]
+  },
+  {
+    "id": 10,
+    "title": "PulseFit Active Smartwatch",
+    "category": "Smartwatches & Wearables",
+    "price": 79.99,
+    "rating": 4.5,
+    "brand": "FitCore",
+    "description": "Waterproof smartwatch with continuous heart rate monitor, sleep tracking, SpO2 sensor, GPS workout modes, and 10-day battery life.",
+    "tags": ["smartwatch", "fitness", "tracker", "health", "heart-rate", "gps", "waterproof", "wearable"]
+  },
+  {
+    "id": 11,
+    "title": "UltraTitan Rugged Outdoor Smartwatch",
+    "category": "Smartwatches & Wearables",
+    "price": 219.00,
+    "rating": 4.8,
+    "brand": "FitCore",
+    "description": "Military-grade titanium bezel smartwatch with offline topo maps, dual-band GPS, 100m water dive resistance, and solar charging display.",
+    "tags": ["smartwatch", "outdoor", "rugged", "gps", "dive", "titanium", "military", "battery"]
+  },
+  {
+    "id": 12,
+    "title": "FlexBand Minimalist Fitness Tracker",
+    "category": "Smartwatches & Wearables",
+    "price": 29.99,
+    "rating": 4.2,
+    "brand": "FitCore",
+    "description": "Slim featherweight fitness wristband tracking daily steps, calories burned, sleep cycles, and silent vibration alarm with 14-day standby.",
+    "tags": ["fitness-band", "tracker", "cheap", "budget", "steps", "health", "minimalist"]
+  },
+  {
+    "id": 13,
+    "title": "BaristaPro Espresso & Coffee Machine",
+    "category": "Home & Kitchen",
+    "price": 199.99,
+    "rating": 4.7,
+    "brand": "KitchenCraft",
+    "description": "15-bar Italian pump espresso maker with stainless steel steam milk frother wand for crafting creamy lattes, cappuccinos, and rich espresso.",
+    "tags": ["coffee", "espresso", "latte", "kitchen", "appliance", "cafe", "frother", "stainless"]
+  },
+  {
+    "id": 14,
+    "title": "AirCrisp XL Digital Air Fryer 6L",
+    "category": "Home & Kitchen",
+    "price": 89.99,
+    "rating": 4.8,
+    "brand": "KitchenCraft",
+    "description": "Oil-free 6-quart digital air fryer with 8 one-touch cooking presets, non-stick dishwasher-safe basket, and rapid 360-degree heat circulation.",
+    "tags": ["air-fryer", "kitchen", "cooking", "healthy", "oil-free", "crispy", "appliance"]
+  },
+  {
+    "id": 15,
+    "title": "ErgoGlow RGB Mechanical Gaming Keyboard",
+    "category": "Laptops & Computers",
+    "price": 69.99,
+    "rating": 4.7,
+    "brand": "ApexPredator",
+    "description": "Hot-swappable mechanical keyboard with clicky blue switches, customizable RGB backlighting, detachable wrist rest, and braided USB cable.",
+    "tags": ["keyboard", "gaming", "mechanical", "rgb", "computer", "accessories", "typing"]
+  },
+  {
+    "id": 16,
+    "title": "PrecisionGlide Wireless Ergonomic Mouse",
+    "category": "Laptops & Computers",
+    "price": 39.99,
+    "rating": 4.6,
+    "brand": "TechZen",
+    "description": "Vertical ergonomic wireless mouse engineered to prevent wrist strain, featuring silent clicks, adjustable DPI up to 4000, and Bluetooth multi-device pair.",
+    "tags": ["mouse", "ergonomic", "wireless", "computer", "accessories", "office", "silent"]
+  }
+]
