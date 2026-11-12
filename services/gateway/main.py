@@ -151,6 +151,17 @@ async def search_products(
 
 
 # Route 3: Proxy to AI Recommendation Microservice
+@app.get("/api/recommend")
+@app.get("/recommend")
+def recommend_info():
+    return {
+        "service": "ShopSmart AI Recommender Engine",
+        "description": "Provide a product ID to retrieve content-based AI recommendations.",
+        "example_url": "http://localhost:8000/recommend/1",
+        "available_products": "http://localhost:8000/products"
+    }
+
+
 @app.get("/api/recommend/{product_id}")
 @app.get("/recommend/{product_id}")
 async def get_recommendations(product_id: int):
@@ -163,6 +174,19 @@ async def get_recommendations(product_id: int):
 
 
 # Route 4: Proxy to AI Chatbot Microservice
+@app.get("/api/chat")
+@app.get("/chat")
+def chat_info():
+    return {
+        "service": "ShopSmart AI Chatbot Assistant",
+        "status": "online",
+        "usage": "Send a POST request with JSON {\"message\": \"your text\"} or use the web storefront chat bubble at http://localhost:8000",
+        "example_post_body": {"message": "Do you have running shoes under $60?"},
+        "view_chat_history": "http://localhost:8000/history",
+        "web_storefront": "http://localhost:8000"
+    }
+
+
 @app.post("/api/chat")
 @app.post("/chat")
 async def chat_with_ai(payload: ChatPayload):

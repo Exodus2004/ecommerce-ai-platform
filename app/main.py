@@ -119,6 +119,18 @@ def search_products(
     }
 
 
+@app.get("/api/recommend")
+@app.get("/recommend")
+def recommend_info():
+    """Information for recommendation endpoint when accessed via browser GET"""
+    return {
+        "service": "ShopSmart AI Recommender Engine",
+        "description": "Provide a product ID to retrieve content-based AI recommendations.",
+        "example_url": "http://localhost:8000/recommend/1",
+        "available_products": "http://localhost:8000/products"
+    }
+
+
 @app.get("/api/recommend/{product_id}")
 @app.get("/recommend/{product_id}")
 def get_recommendations(product_id: int):
@@ -127,6 +139,20 @@ def get_recommendations(product_id: int):
     return {
         "product_id": product_id,
         "recommendations": recommendations
+    }
+
+
+@app.get("/api/chat")
+@app.get("/chat")
+def chat_info():
+    """Information for chatbot endpoint when accessed via browser GET"""
+    return {
+        "service": "ShopSmart AI Chatbot Assistant",
+        "status": "online",
+        "usage": "Send a POST request with JSON {\"message\": \"your text\"} or use the web storefront chat bubble at http://localhost:8000",
+        "example_post_body": {"message": "Do you have running shoes under $60?"},
+        "view_chat_history": "http://localhost:8000/history",
+        "web_storefront": "http://localhost:8000"
     }
 
 

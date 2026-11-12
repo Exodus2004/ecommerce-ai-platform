@@ -78,6 +78,17 @@ def health():
     }
 
 
+@app.get("/recommend")
+@app.get("/api/recommend")
+def recommend_info():
+    return {
+        "service": "ShopSmart AI Recommendation Microservice",
+        "port": 8003,
+        "usage": "Pass a product ID in the path to get content-based recommendations.",
+        "example": "http://localhost:8003/recommend/1"
+    }
+
+
 @app.get("/recommend/{product_id}")
 @app.get("/api/recommend/{product_id}")
 def get_recommendations(product_id: int):

@@ -92,6 +92,18 @@ def health():
     }
 
 
+@app.get("/chat")
+@app.get("/api/chat")
+def chat_info():
+    return {
+        "service": "ShopSmart AI Chatbot Microservice",
+        "port": 8004,
+        "database": "MongoDB",
+        "usage": "Send a POST request with JSON {\"message\": \"...\"} to converse with the shopping assistant.",
+        "history_endpoint": "http://localhost:8004/chat/history"
+    }
+
+
 @app.post("/chat")
 @app.post("/api/chat")
 def chat(request: ChatRequest):

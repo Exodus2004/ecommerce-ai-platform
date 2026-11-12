@@ -33,5 +33,19 @@
     "bot_reply": "\ud83d\udecd\ufe0f **Here are top-rated items in Audio & Headphones**:\n\n\u2022 **StudioMaster Open-Back Reference Headphones** \u2014 **$249.0** (Rating: 4.9\u2b50)\n\u2022 **SonicQuiet Pro Noise-Cancelling Headphones** \u2014 **$129.99** (Rating: 4.7\u2b50)\n\u2022 **BudgetBeats Wireless Earbuds** \u2014 **$34.99** (Rating: 4.3\u2b50)\n",
     "products_recommended": 3,
     "storage": "MongoDB (Local Replica)"
+  },
+  {
+    "timestamp": "2026-11-12T09:20:27.980369",
+    "user_message": "Show me wireless earbuds",
+    "bot_reply": "\ud83d\udecd\ufe0f **Here are top-rated items in Audio & Headphones**:\n\n\u2022 **StudioMaster Open-Back Reference Headphones** \u2014 **$249.0** (Rating: 4.9\u2b50)\n\u2022 **SonicQuiet Pro Noise-Cancelling Headphones** \u2014 **$129.99** (Rating: 4.7\u2b50)\n\u2022 **BudgetBeats Wireless Earbuds** \u2014 **$34.99** (Rating: 4.3\u2b50)\n",
+    "products_recommended": 3,
+    "storage": "MongoDB (Local Replica)"
+  },
+  {
+    "timestamp": "2026-11-12T09:25:34.861801",
+    "user_message": "hey  yoyo",
+    "bot_reply": "\ud83d\udc4b **Hello! Welcome to ShopSmart AI!**\n\nI am your personal AI shopping concierge. I can help you with:\n\u2022 **Product Finder**: Ask for *'running shoes under $60'* or *'laptops for coding'*\n\u2022 **Lifestyle Suggestions**: Ask about *'gym gear'*, *'work from home setup'*, or *'gifts'*\n\u2022 **Store FAQs**: Ask about *'returns'*, *'shipping'*, or *'warranty'*\n\nWhat can I help you find today?",
+    "products_recommended": 3,
+    "storage": "MongoDB (Local Replica)"
   }
 ]
