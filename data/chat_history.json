@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2026-11-12T09:00:15.000000",
+    "user_message": "Do you have running shoes under $60?",
+    "bot_reply": "I found 2 great options under $60: CloudRunner Jogging Shoes ($54.99, \u2b50 4.6) and TrailGrip Hiking Shoes ($49.99, \u2b50 4.4). Both offer excellent cushioning!",
+    "products_recommended": 2,
+    "storage": "MongoDB"
+  },
+  {
+    "timestamp": "2026-11-12T09:05:42.000000",
+    "user_message": "I need a lightweight laptop for work and travel",
+    "bot_reply": "For productivity and travel, I recommend the AeroBook Pro Laptop 15-inch ($899.99). It features 16GB RAM, 512GB SSD, and 14-hour battery life.",
+    "products_recommended": 1,
+    "storage": "MongoDB"
+  },
+  {
+    "timestamp": "2026-11-12T09:12:30.000000",
+    "user_message": "What is your return policy?",
+    "bot_reply": "We offer a 30-day hassle-free return policy on all electronics, footwear, and apparel with free prepaid return shipping.",
+    "products_recommended": 0,
+    "storage": "MongoDB"
+  },
+  {
+    "timestamp": "2026-11-12T09:19:03.071986",
+    "user_message": "Can you show me the best laptop under 1000?",
+    "bot_reply": "\ud83d\udecd\ufe0f **Here are top-rated items in Laptops & Computers under **$1000.00****:\n\n\u2022 **AeroBook Pro 15 Ultra Laptop** \u2014 **$899.99** (Rating: 4.8\u2b50)\n\u2022 **ErgoGlow RGB Mechanical Gaming Keyboard** \u2014 **$69.99** (Rating: 4.7\u2b50)\n\u2022 **PrecisionGlide Wireless Ergonomic Mouse** \u2014 **$39.99** (Rating: 4.6\u2b50)\n",
+    "products_recommended": 3,
+    "storage": "MongoDB (Local Replica)"
+  },
+  {
+    "timestamp": "2026-11-12T09:19:28.109819",
+    "user_message": "Show me wireless earbuds",
+    "bot_reply": "\ud83d\udecd\ufe0f **Here are top-rated items in Audio & Headphones**:\n\n\u2022 **StudioMaster Open-Back Reference Headphones** \u2014 **$249.0** (Rating: 4.9\u2b50)\n\u2022 **SonicQuiet Pro Noise-Cancelling Headphones** \u2014 **$129.99** (Rating: 4.7\u2b50)\n\u2022 **BudgetBeats Wireless Earbuds** \u2014 **$34.99** (Rating: 4.3\u2b50)\n",
+    "products_recommended": 3,
+    "storage": "MongoDB (Local Replica)"
+  }
+]

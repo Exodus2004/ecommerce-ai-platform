@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from app.ai_search import AISearchEngine
 from app.ai_recommender import AIRecommender
 from app.ai_chatbot import AIChatbot
+from app.database import save_chat_interaction, get_chat_history, get_db_status
 
 # Base directories
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,6 +135,14 @@ def get_recommendations(product_id: int):
 def chat_with_ai(request: ChatRequest):
     """Processes user chat messages and returns intelligent replies"""
     response = chatbot.respond(request.message)
+
+    # Persist conversation turn to MongoDB (or local MongoDB replica)
+    save_chat_interaction(
+        user_message=request.message,
+        bot_reply=response.get("reply", ""),
+        products_attached=response.get("products", [])
+    )
+
     return response
 
 
@@ -141,12 +150,15 @@ def chat_with_ai(request: ChatRequest):
 @app.get("/chat/history")
 @app.get("/history")
 @app.get("/api/history")
-def get_chat_history():
-    """Returns conversation logs"""
+def get_chat_history_endpoint(limit: int = Query(15, description="Max logs to return")):
+    """Returns conversation logs stored in MongoDB"""
+    history = get_chat_history(limit=limit)
+    db_info = get_db_status()
     return {
-        "database": "MongoDB (Ready)",
-        "total_records": 0,
-        "history": []
+        "database": db_info["database"],
+        "status": db_info["status"],
+        "total_records": len(history),
+        "history": history
     }
 
 
