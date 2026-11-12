@@ -1,21 +1,21 @@
 """
 Microservice 1: Product Catalog Service
 Manages product inventory, categories, price queries, and product details.
+Database: PostgreSQL (with automatic schema initialization & seeding).
 Port: 8001
 """
 
-import os
-import json
-from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
-DATA_PATH = os.path.join(Path(__file__).resolve().parent, "products.json")
+try:
+    from database import init_db, get_all_products, get_product_by_id, get_all_categories, db_type, POSTGRES_HOST
+except ImportError:
+    from services.catalog.database import init_db, get_all_products, get_product_by_id, get_all_categories, db_type, POSTGRES_HOST
 
 app = FastAPI(
     title="ShopSmart Catalog Microservice",
-    description="Manages product inventory, metadata, and catalog queries",
+    description="Manages product inventory using PostgreSQL database",
     version="1.0.0"
 )
 
@@ -26,41 +26,42 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load catalog data
-with open(DATA_PATH, "r", encoding="utf-8") as f:
-    PRODUCTS: List[Dict[str, Any]] = json.load(f)
 
-PRODUCT_MAP = {p["id"]: p for p in PRODUCTS}
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 
 @app.get("/health")
 def health():
+    products = get_all_products()
     return {
         "status": "healthy",
         "service": "catalog-service",
+        "database": db_type,
+        "database_target": POSTGRES_HOST,
         "port": 8001,
-        "total_products": len(PRODUCTS)
+        "total_products": len(products)
     }
 
 
 @app.get("/products")
 def get_products(category: Optional[str] = None):
-    if category and category.lower() != "all":
-        filtered = [p for p in PRODUCTS if p["category"].lower() == category.lower()]
-        return {"total": len(filtered), "products": filtered}
-    return {"total": len(PRODUCTS), "products": PRODUCTS}
+    products = get_all_products(category=category)
+    return {"total": len(products), "products": products, "database": db_type}
 
 
 @app.get("/products/{product_id}")
 def get_product(product_id: int):
-    if product_id not in PRODUCT_MAP:
+    prod = get_product_by_id(product_id)
+    if not prod:
         raise HTTPException(status_code=404, detail="Product not found")
-    return PRODUCT_MAP[product_id]
+    return prod
 
 
 @app.get("/categories")
 def get_categories():
-    categories = sorted(list(set(p["category"] for p in PRODUCTS)))
+    categories = get_all_categories()
     return {"categories": categories}
 
 

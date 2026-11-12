@@ -1,6 +1,7 @@
 """
 Microservice 4: AI Chatbot Service
 Autonomous conversational shopping concierge.
+Database: MongoDB (persists conversation history, queries, and analytics).
 Port: 8004
 """
 
@@ -9,20 +10,24 @@ import json
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 try:
     from ai_chatbot import AIChatbot
 except ImportError:
     from services.chatbot.ai_chatbot import AIChatbot
+try:
+    from database import save_chat_interaction, get_chat_history, get_db_status
+except ImportError:
+    from services.chatbot.database import save_chat_interaction, get_chat_history, get_db_status
 
 CATALOG_URL = os.getenv("CATALOG_SERVICE_URL", "http://127.0.0.1:8001")
 FALLBACK_DATA = os.path.join(Path(__file__).resolve().parent, "products.json")
 
 app = FastAPI(
     title="ShopSmart AI Chatbot Microservice",
-    description="Conversational Shopping Assistant Service",
+    description="Conversational Shopping Assistant Service with MongoDB persistence",
     version="1.0.0"
 )
 
@@ -63,9 +68,13 @@ def startup_event():
 
 @app.get("/health")
 def health():
+    db_info = get_db_status()
     return {
         "status": "healthy",
         "service": "chatbot-service",
+        "database": db_info["database"],
+        "database_status": db_info["status"],
+        "database_target": db_info["target_host"],
         "port": 8004
     }
 
@@ -78,7 +87,26 @@ def chat(request: ChatRequest):
         chatbot = AIChatbot(products)
 
     response = chatbot.respond(request.message)
+
+    # Persist the conversational interaction to MongoDB
+    save_chat_interaction(
+        user_message=request.message,
+        bot_reply=response.get("reply", ""),
+        products_attached=response.get("products", [])
+    )
+
     return response
+
+
+@app.get("/chat/history")
+def get_history(limit: int = Query(10, description="Max number of logs to return")):
+    """Returns conversation logs stored in MongoDB"""
+    history = get_chat_history(limit=limit)
+    return {
+        "database": get_db_status()["database"],
+        "total_records": len(history),
+        "history": history
+    }
 
 
 if __name__ == "__main__":

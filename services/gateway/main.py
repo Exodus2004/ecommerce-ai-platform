@@ -143,6 +143,17 @@ async def chat_with_ai(payload: ChatPayload):
             raise HTTPException(status_code=503, detail=f"Chatbot microservice unavailable: {str(e)}")
 
 
+# Route 5: View Chatbot History Stored in MongoDB
+@app.get("/api/chat/history")
+async def get_chat_history(limit: int = Query(10)):
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        try:
+            resp = await client.get(f"{CHATBOT_URL}/chat/history?limit={limit}")
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=503, detail=f"Chatbot microservice unavailable: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,7 +1,7 @@
-# 🚢 Kubernetes 5-Microservices Deployment Guide
+# 🚢 Kubernetes Polyglot Microservices Deployment Guide
 
 > **Project**: ShopSmart AI E-Commerce Platform  
-> **Topology**: 5 Distinct Microservices, 10 Pod Replicas, Public LoadBalancer
+> **Topology**: 5 Microservices + 2 Databases (**PostgreSQL** & **MongoDB**), Public LoadBalancer
 
 ---
 
@@ -20,17 +20,17 @@
                  ▼                                 ▼
       [ Pod: api-gateway-1 ]            [ Pod: api-gateway-2 ]
                  │
-                 ├──► http://catalog-service:8001         (ClusterIP)
+                 ├──► http://catalog-service:8001         (ClusterIP) ──► postgres-service:5432
                  ├──► http://search-service:8002          (ClusterIP)
                  ├──► http://recommendation-service:8003  (ClusterIP)
-                 └──► http://chatbot-service:8004         (ClusterIP)
+                 └──► http://chatbot-service:8004         (ClusterIP) ──► mongodb-service:27017
 ```
 
 ---
 
 ## 🚀 Deployment Commands
 
-### Step 1: Deploy All 5 Microservices (10 Pods)
+### Step 1: Deploy Everything (Databases + Microservices)
 
 ```bash
 kubectl apply -f deployment.yaml
@@ -39,7 +39,7 @@ kubectl apply -f service.yaml
 
 ---
 
-### Step 2: Verify Pods
+### Step 2: Verify Running Pods
 
 ```bash
 kubectl get pods
@@ -48,6 +48,8 @@ kubectl get pods
 **Expected Output:**
 ```text
 NAME                                             READY   STATUS    RESTARTS   AGE
+postgres-deployment-55d8869ff9-p44qk             1/1     Running   0          45s
+mongodb-deployment-7bb9d4797d-z88v1              1/1     Running   0          45s
 api-gateway-deployment-7bb9d4797d-6l9fx          1/1     Running   0          30s
 api-gateway-deployment-7bb9d4797d-mpxj8          1/1     Running   0          30s
 catalog-service-deployment-859846d5c6-c9w42      1/1     Running   0          30s
@@ -62,7 +64,7 @@ chatbot-service-deployment-64d898bfcb-pt99a      1/1     Running   0          30
 
 ---
 
-### Step 3: Verify the 5 Services
+### Step 3: Verify Services
 
 ```bash
 kubectl get svc
@@ -72,26 +74,28 @@ kubectl get svc
 ```text
 NAME                     TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)        AGE
 api-gateway-service      LoadBalancer   10.0.182.45    20.124.50.80    80:31250/TCP   45s
+postgres-service         ClusterIP      10.0.182.50    <none>          5432/TCP       45s
+mongodb-service          ClusterIP      10.0.182.51    <none>          27017/TCP      45s
 catalog-service          ClusterIP      10.0.182.46    <none>          8001/TCP       45s
 search-service           ClusterIP      10.0.182.47    <none>          8002/TCP       45s
 recommendation-service   ClusterIP      10.0.182.48    <none>          8003/TCP       45s
 chatbot-service          ClusterIP      10.0.182.49    <none>          8004/TCP       45s
 ```
 
-* Navigate to: **`http://20.124.50.80`** *(or whatever `EXTERNAL-IP` Azure assigns)*.
-
 ---
 
-## 🎯 4 Questions Your Instructor Will Ask & How to Answer
+## 🎯 Questions Your Instructor Will Ask About Databases & Architecture
 
-### 1. "How do your microservices communicate with each other in Kubernetes?"
-> **Answer**: *"Sir, they communicate using **Kubernetes CoreDNS Service Discovery**. The API Gateway accesses downstream services using internal DNS names: `http://catalog-service:8001`, `http://search-service:8002`, `http://recommendation-service:8003`, and `http://chatbot-service:8004`."*
+### 1. "Why did you use PostgreSQL for Catalog and MongoDB for Chatbot?" (Polyglot Persistence)
+> **Answer**:  
+> *"Sir, this is the enterprise **Polyglot Persistence Pattern**.*  
+> *1. **PostgreSQL** was chosen for the **Catalog Service** because product inventory and pricing require strict relational schemas, ACID transaction guarantees, and structured indexing.*  
+> *2. **MongoDB** was chosen for the **Chatbot Service** because user conversations and interaction analytics are **semi-structured JSON documents** with varying message sizes and metadata that benefit from a schema-less NoSQL document store."*
 
-### 2. "Why is only the API Gateway a LoadBalancer while the others are ClusterIP?"
-> **Answer**: *"For **Security & Cloud Cost Optimization**. Internal services (Catalog, AI Search, Recommender, Chatbot) should never be directly exposed to the public internet. By keeping them as `ClusterIP`, they are completely isolated inside the private cluster network. Only the API Gateway is exposed via `LoadBalancer` on port 80 to accept customer web requests."*
+### 2. "How do the microservices connect to PostgreSQL and MongoDB in Kubernetes?"
+> **Answer**:  
+> *"Through **Kubernetes Service DNS Discovery**. The Catalog Service connects using the environment variable `POSTGRES_HOST=postgres-service:5432`. The Chatbot Service connects using `MONGO_HOST=mongodb-service:27017`."*
 
-### 3. "How does scaling work if AI Search gets high traffic?"
-> **Answer**: *"Because each service is an independent microservice, we can scale `search-service-deployment` from 2 pods up to 20 pods independently using an HPA (Horizontal Pod Autoscaler) without wasting money scaling the Catalog or Chatbot services!"*
-
-### 4. "How do you monitor the health of all 5 microservices?"
-> **Answer**: *"Our API Gateway exposes an aggregated health check endpoint at `/api/health`. When queried, it performs parallel health probes across all 4 downstream services and returns an overall cluster status report."*
+### 3. "Are the databases exposed to the public internet?"
+> **Answer**:  
+> *"No, sir! For security best practices, both PostgreSQL and MongoDB are configured as **ClusterIP Services**. They are completely invisible to the outside internet and can only be accessed privately by our authorized microservices within the cluster. Only the **API Gateway** is exposed publicly via `type: LoadBalancer` on Port 80."*

@@ -1,12 +1,13 @@
-# 🛍️ ShopSmart AI: 5-Microservice E-Commerce Architecture
+# 🛍️ ShopSmart AI: 5-Microservices + Polyglot Persistence (PostgreSQL & MongoDB)
 
-> **Architecture**: Distributed Cloud-Native Microservices (5 Independent Services)  
+> **Architecture**: Distributed Cloud-Native Microservices with **Polyglot Persistence**  
+> **Databases**: **PostgreSQL** (Relational ACID for Catalog) & **MongoDB** (NoSQL Documents for Chatbot History)  
 > **Infrastructure**: Kubernetes (AKS / Minikube) with Public LoadBalancer & Internal ClusterIP DNS  
 > **AI Engines**: TF-IDF Semantic Search • Cosine Recommendation Matrix • Conversational Shopping Assistant
 
 ---
 
-## 🏗️ The 5 Microservices Architecture
+## 🏗️ The Polyglot Microservices Architecture
 
 ```
                                 [ External Internet User ]
@@ -28,26 +29,44 @@
 │ • Inventory,     │   │ • TF-IDF Vector  │   │ • Pairwise       │              │ • Multi-Tier NLU │
 │   prices, and    │   │   semantic search│   │   cosine matrix  │              │   intent parsing │
 │   metadata       │   │ • Dynamic budget │   │ • Alternatives & │              │ • Store policies │
-│                  │   │   filtering      │   │   companions     │              │ • Product cards  │
-│ (ClusterIP:8001) │   │ (ClusterIP:8002) │   │ (ClusterIP:8003) │              │ (ClusterIP:8004) │
-└──────────────────┘   └──────────────────┘   └──────────────────┘              └──────────────────┘
+│ (ClusterIP:8001) │   │   filtering      │   │   companions     │              │ (ClusterIP:8004) │
+└────────┬─────────┘   └──────────────────┘   └──────────────────┘              └────────┬─────────┘
+         │                                                                               │
+         ▼ (TCP :5432)                                                                   ▼ (TCP :27017)
+┌──────────────────────────┐                                                    ┌──────────────────────────┐
+│ 🐘 POSTGRESQL DATABASE   │                                                    │ 🍃 MONGODB DATABASE      │
+│ (Relational ACID Storage)│                                                    │ (NoSQL Document Store)   │
+│ • Table: `products`      │                                                    │ • Coll: `conversations`  │
+│ (ClusterIP:5432)         │                                                    │ (ClusterIP:27017)        │
+└──────────────────────────┘                                                    └──────────────────────────┘
 ```
 
 ---
 
-## 📋 Microservices Directory
+## 📋 Microservices & Database Directory
 
-| # | Microservice Name | Folder | Port | Kubernetes Service Type | Key Functionality |
+| # | Component Name | Technology | Port | Kubernetes Service Type | Key Role in Architecture |
 | :-: | :--- | :--- | :-: | :--- | :--- |
-| **1** | **`api-gateway`** | `services/gateway/` | **8000** | **LoadBalancer (Port 80)** | Serves Web Storefront & routes API calls |
-| **2** | **`catalog-service`** | `services/catalog/` | **8001** | **ClusterIP** | Product inventory & category management |
-| **3** | **`search-service`** | `services/search/` | **8002** | **ClusterIP** | TF-IDF Vector Search & relevance ranking |
-| **4** | **`recommendation-service`** | `services/recommendation/` | **8003** | **ClusterIP** | Pairwise Cosine Matrix recommendations |
-| **5** | **`chatbot-service`** | `services/chatbot/` | **8004** | **ClusterIP** | Conversational concierge & policy queries |
+| **1** | **`api-gateway`** | FastAPI + Static HTML/CSS/JS | **8000** | **LoadBalancer (Port 80)** | Front door reverse proxy routing traffic |
+| **2** | **`catalog-service`** | Python + SQLAlchemy | **8001** | **ClusterIP** | Product inventory & category management |
+| **3** | **`search-service`** | Scikit-Learn TF-IDF | **8002** | **ClusterIP** | Vector-based semantic search & ranking |
+| **4** | **`recommendation-service`**| Scikit-Learn Cosine Sim | **8003** | **ClusterIP** | Pairwise similarity matrix recommendations |
+| **5** | **`chatbot-service`** | Python NLU + PyMongo | **8004** | **ClusterIP** | Conversational concierge & policy queries |
+| **🐘**| **`postgres-service`**| **PostgreSQL 15** | **5432** | **ClusterIP** | Relational ACID storage for products |
+| **🍃**| **`mongodb-service`** | **MongoDB 6.0** | **27017**| **ClusterIP** | Document store for chat logs & analytics |
 
 ---
 
-## 🚀 How to Run Locally (All 5 Services in 1 Command!)
+## 🎯 Why This Polyglot Architecture is Best Practice:
+
+1. **PostgreSQL for Catalog**:  
+   Products have strict schemas (Price, Category, Rating, Stock). PostgreSQL provides **ACID transactions and relational indexing**, ensuring accurate pricing and inventory.
+2. **MongoDB for Chatbot History**:  
+   Conversations are **semi-structured, dynamic JSON documents** with varying message lengths, timestamps, session IDs, and recommendation payloads. MongoDB provides effortless document storage and fast analytics.
+
+---
+
+## 🚀 How to Run Locally
 
 ```bash
 cd ecommerce-ai-platform
@@ -56,34 +75,26 @@ python run_all_services.py
 
 * Open your browser to: **`http://localhost:8000`**
 * Check the live 5-service health status: **`http://localhost:8000/api/health`**
-  ```json
-  {
-    "gateway": "healthy",
-    "overall_cluster_status": "healthy",
-    "microservices": {
-      "catalog_service": "healthy",
-      "search_service": "healthy",
-      "recommendation_service": "healthy",
-      "chatbot_service": "healthy"
-    }
-  }
-  ```
+* View conversation logs from MongoDB: **`http://localhost:8000/api/chat/history`**
 
 ---
 
 ## 🚢 Kubernetes Deployment Manifests (Root Directory)
 
-* **`deployment.yaml`**: Contains Deployments for all **5 microservices** (2 replicas each = 10 high-availability pods total).
-* **`service.yaml`**: Contains Services for all **5 microservices** (`api-gateway-service` as `type: LoadBalancer`, and 4 internal `type: ClusterIP` services).
+* **`deployment.yaml`**: Contains Deployments for:
+  - `postgres-deployment` (PostgreSQL Database)
+  - `mongodb-deployment` (MongoDB Database)
+  - 5 Microservices (Gateway, Catalog, Search, Recommendation, Chatbot) with 2 replicas each!
+* **`service.yaml`**: Contains Services for all components (`api-gateway-service` as `type: LoadBalancer`, and 6 internal `type: ClusterIP` services).
 
 ```bash
-# Deploy all 5 microservices to Kubernetes
+# Deploy all databases and microservices with one command:
 kubectl apply -f deployment.yaml
 kubectl apply -f service.yaml
 
-# Check all 10 running pods
+# Check running pods (Databases + 10 Microservice pods):
 kubectl get pods
 
-# Get the Public LoadBalancer IP
+# Get the Public LoadBalancer IP:
 kubectl get svc api-gateway-service
 ```

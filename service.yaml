@@ -1,12 +1,12 @@
 # ====================================================================
-# Kubernetes Services: 5 Microservices Networking
+# Kubernetes Services: 5 Microservices + Polyglot Databases
 # ====================================================================
 # - 1 Public Service (api-gateway-service) exposed via LoadBalancer (Port 80)
-# - 4 Private Internal Services (ClusterIP) for secure microservice-to-microservice traffic
+# - 6 Private Internal Services (ClusterIP) for secure database & inter-service traffic
 # ====================================================================
 
 # --------------------------------------------------------------------
-# 1. API Gateway Service (Public LoadBalancer)
+# 1. API Gateway Service (Public LoadBalancer - Port 80)
 # --------------------------------------------------------------------
 apiVersion: v1
 kind: Service
@@ -15,7 +15,6 @@ metadata:
   labels:
     app: api-gateway
 spec:
-  # Type LoadBalancer: Provisions a public Cloud IP for external users
   type: LoadBalancer
   selector:
     app: api-gateway
@@ -27,7 +26,47 @@ spec:
 
 ---
 # --------------------------------------------------------------------
-# 2. Product Catalog Internal Service (ClusterIP)
+# 2. PostgreSQL Internal Database Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# --------------------------------------------------------------------
+# 3. MongoDB Internal Database Service (ClusterIP)
+# --------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  labels:
+    app: mongodb
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+---
+# --------------------------------------------------------------------
+# 4. Product Catalog Internal Service (ClusterIP)
 # --------------------------------------------------------------------
 apiVersion: v1
 kind: Service
@@ -47,7 +86,7 @@ spec:
 
 ---
 # --------------------------------------------------------------------
-# 3. AI Search Optimization Internal Service (ClusterIP)
+# 5. AI Search Optimization Internal Service (ClusterIP)
 # --------------------------------------------------------------------
 apiVersion: v1
 kind: Service
@@ -67,7 +106,7 @@ spec:
 
 ---
 # --------------------------------------------------------------------
-# 4. AI Recommendation Internal Service (ClusterIP)
+# 6. AI Recommendation Internal Service (ClusterIP)
 # --------------------------------------------------------------------
 apiVersion: v1
 kind: Service
@@ -87,7 +126,7 @@ spec:
 
 ---
 # --------------------------------------------------------------------
-# 5. AI Chatbot Internal Service (ClusterIP)
+# 7. AI Chatbot Internal Service (ClusterIP)
 # --------------------------------------------------------------------
 apiVersion: v1
 kind: Service

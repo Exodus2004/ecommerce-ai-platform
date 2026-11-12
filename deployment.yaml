@@ -1,15 +1,286 @@
 # ====================================================================
-# Kubernetes Deployments: 5 Microservices Architecture
+# Kubernetes Deployments: 5 Microservices + Polyglot Databases
 # ====================================================================
-# 1. api-gateway               (Edge Gateway & Web UI)
-# 2. catalog-service           (Product Data & Inventory)
-# 3. search-service            (AI Semantic Search Optimization)
-# 4. recommendation-service   (AI Content-Based Recommender)
-# 5. chatbot-service          (AI Conversational Shopping Concierge)
+# Databases:
+#   - PostgreSQL (Relational Database for Catalog Service)
+#   - MongoDB    (NoSQL Document Database for Chatbot Service)
+# Microservices:
+#   1. api-gateway               (Edge Gateway & Web UI)
+#   2. catalog-service           (Connected to PostgreSQL)
+#   3. search-service            (AI Semantic Search Optimization)
+#   4. recommendation-service   (AI Content-Based Recommender)
+#   5. chatbot-service          (Connected to MongoDB)
 # ====================================================================
 
 # --------------------------------------------------------------------
-# 1. API Gateway Microservice Deployment
+# 1. PostgreSQL Database Deployment (for Catalog Service)
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres123"
+            - name: POSTGRES_DB
+              value: "catalog_db"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+# --------------------------------------------------------------------
+# 2. MongoDB Database Deployment (for Chatbot Service)
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:6.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+# --------------------------------------------------------------------
+# 3. Product Catalog Microservice Deployment (Uses PostgreSQL)
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service-deployment
+  labels:
+    app: catalog-service
+    tier: core-domain
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: catalog-service
+  template:
+    metadata:
+      labels:
+        app: catalog-service
+    spec:
+      containers:
+        - name: catalog-service
+          image: shopsmart-catalog:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          env:
+            - name: POSTGRES_HOST
+              value: "postgres-service"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres123"
+            - name: POSTGRES_DB
+              value: "catalog_db"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 4. AI Search Optimization Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service-deployment
+  labels:
+    app: search-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+    spec:
+      containers:
+        - name: search-service
+          image: shopsmart-search:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8002
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 5. AI Recommendation Microservice Deployment
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recommendation-service-deployment
+  labels:
+    app: recommendation-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommendation-service
+  template:
+    metadata:
+      labels:
+        app: recommendation-service
+    spec:
+      containers:
+        - name: recommendation-service
+          image: shopsmart-recommendation:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8003
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 6. AI Chatbot Microservice Deployment (Uses MongoDB)
+# --------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-service-deployment
+  labels:
+    app: chatbot-service
+    tier: ai-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chatbot-service
+  template:
+    metadata:
+      labels:
+        app: chatbot-service
+    spec:
+      containers:
+        - name: chatbot-service
+          image: shopsmart-chatbot:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8004
+          env:
+            - name: CATALOG_SERVICE_URL
+              value: "http://catalog-service:8001"
+            - name: MONGO_HOST
+              value: "mongodb-service"
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_DB_NAME
+              value: "shopsmart_chat_db"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# --------------------------------------------------------------------
+# 7. API Gateway Microservice Deployment (Reverse Proxy & Web Store)
 # --------------------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
@@ -62,176 +333,3 @@ spec:
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 5
-
----
-# --------------------------------------------------------------------
-# 2. Product Catalog Microservice Deployment
-# --------------------------------------------------------------------
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: catalog-service-deployment
-  labels:
-    app: catalog-service
-    tier: core-domain
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: catalog-service
-  template:
-    metadata:
-      labels:
-        app: catalog-service
-    spec:
-      containers:
-        - name: catalog-service
-          image: shopsmart-catalog:v1
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8001
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "250m"
-              memory: "256Mi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8001
-            initialDelaySeconds: 10
-            periodSeconds: 10
-
----
-# --------------------------------------------------------------------
-# 3. AI Search Optimization Microservice Deployment
-# --------------------------------------------------------------------
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: search-service-deployment
-  labels:
-    app: search-service
-    tier: ai-engine
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: search-service
-  template:
-    metadata:
-      labels:
-        app: search-service
-    spec:
-      containers:
-        - name: search-service
-          image: shopsmart-search:v1
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8002
-          env:
-            - name: CATALOG_SERVICE_URL
-              value: "http://catalog-service:8001"
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8002
-            initialDelaySeconds: 15
-            periodSeconds: 10
-
----
-# --------------------------------------------------------------------
-# 4. AI Recommendation Microservice Deployment
-# --------------------------------------------------------------------
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: recommendation-service-deployment
-  labels:
-    app: recommendation-service
-    tier: ai-engine
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: recommendation-service
-  template:
-    metadata:
-      labels:
-        app: recommendation-service
-    spec:
-      containers:
-        - name: recommendation-service
-          image: shopsmart-recommendation:v1
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8003
-          env:
-            - name: CATALOG_SERVICE_URL
-              value: "http://catalog-service:8001"
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8003
-            initialDelaySeconds: 15
-            periodSeconds: 10
-
----
-# --------------------------------------------------------------------
-# 5. AI Chatbot Microservice Deployment
-# --------------------------------------------------------------------
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chatbot-service-deployment
-  labels:
-    app: chatbot-service
-    tier: ai-engine
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: chatbot-service
-  template:
-    metadata:
-      labels:
-        app: chatbot-service
-    spec:
-      containers:
-        - name: chatbot-service
-          image: shopsmart-chatbot:v1
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8004
-          env:
-            - name: CATALOG_SERVICE_URL
-              value: "http://catalog-service:8001"
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8004
-            initialDelaySeconds: 15
-            periodSeconds: 10
