@@ -5,12 +5,20 @@ Connects automatically to MongoDB when running with container infrastructure,
 with persistent local fallback storage in data/chat_history.json.
 """
 
+import sys
 import os
 import json
 import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 from pymongo import MongoClient
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 MONGO_HOST = os.getenv("MONGO_HOST", "mongodb-service")
 MONGO_PORT = os.getenv("MONGO_PORT", "27017")
@@ -73,12 +81,12 @@ try:
     db = client[MONGO_DB_NAME]
     chat_collection = db["chat_conversations"]
     mongo_connected = True
-    print(f"✅ Connected to MongoDB at {MONGO_URI} (Database: {MONGO_DB_NAME})")
+    print(f"[OK] Connected to MongoDB at {MONGO_URI} (Database: {MONGO_DB_NAME})")
     if chat_collection.count_documents({}) == 0:
         chat_collection.insert_many([dict(s) for s in SEED_HISTORY])
 except Exception:
     mongo_connected = False
-    print(f"ℹ️ MongoDB running in Local Mode. Storing conversation records in data/chat_history.json.")
+    print(f"[INFO] MongoDB running in Local Mode. Storing conversation records in data/chat_history.json.")
 
 
 def _persist_local():
@@ -107,7 +115,7 @@ def save_chat_interaction(user_message: str, bot_reply: str, products_attached: 
         try:
             chat_collection.insert_one(dict(record))
         except Exception as e:
-            print(f"⚠️ Error saving to MongoDB: {e}")
+            print(f"[WARN] Error saving to MongoDB: {e}")
 
 
 def get_chat_history(limit: int = 15) -> List[Dict[str, Any]]:

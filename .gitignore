@@ -9,3 +9,5 @@ ENV/
 .vscode/
 .idea/
 *.log
+*.db
+

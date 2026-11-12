@@ -4,9 +4,17 @@ Uses PostgreSQL (via SQLAlchemy) for relational product inventory.
 Features automatic table creation, initial data seeding, and local SQLite fallback.
 """
 
+import sys
 import os
 import json
 from pathlib import Path
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 from typing import List, Dict, Any
 from sqlalchemy import create_engine, Column, Integer, String, Float, JSON
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -62,12 +70,12 @@ try:
         pass
     engine = pg_engine
     db_type = "PostgreSQL"
-    print(f"✅ Connected to PostgreSQL at {POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}")
+    print(f"[OK] Connected to PostgreSQL at {POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}")
 except Exception:
     # Use SQLite for seamless local execution without requiring local Postgres daemon
     engine = create_engine(FALLBACK_SQLITE_URL, connect_args={"check_same_thread": False})
     db_type = "SQLite (Local Dev Mode - PostgreSQL Ready)"
-    print(f"ℹ️ PostgreSQL not reachable at {POSTGRES_HOST}. Using {db_type}")
+    print(f"[INFO] PostgreSQL not reachable at {POSTGRES_HOST}. Using {db_type}")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -94,7 +102,7 @@ def init_db():
                 )
                 session.add(prod)
             session.commit()
-            print(f"✅ Seeded {len(items)} products into {db_type} database!")
+            print(f"[OK] Seeded {len(items)} products into {db_type} database!")
     finally:
         session.close()
 

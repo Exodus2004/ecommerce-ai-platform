@@ -77,14 +77,15 @@ def main():
     print("🚀 LAUNCHING 5 E-COMMERCE AI MICROSERVICES...")
     print("=" * 70)
 
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+
     for s in SERVICES:
         print(f"Starting {s['name']} on port {s['port']}...")
         p = subprocess.Popen(
             s["cmd"],
             cwd=s["dir"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
+            env=env
         )
         processes.append((p, s))
         time.sleep(1.0)

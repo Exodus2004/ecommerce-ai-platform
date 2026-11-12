@@ -4,11 +4,19 @@ Uses MongoDB to persist conversation logs, user queries, bot replies, and intera
 Features automatic connection to MongoDB in Kubernetes, with persistent local fallback.
 """
 
+import sys
 import os
 import json
 import datetime
 from pathlib import Path
 from typing import List, Dict, Any
+
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
@@ -73,13 +81,13 @@ try:
     db = client[MONGO_DB_NAME]
     chat_collection = db["chat_conversations"]
     mongo_connected = True
-    print(f"✅ Connected to MongoDB at {MONGO_URI} (Database: {MONGO_DB_NAME})")
+    print(f"[OK] Connected to MongoDB at {MONGO_URI} (Database: {MONGO_DB_NAME})")
     # Seed MongoDB if empty
     if chat_collection.count_documents({}) == 0:
         chat_collection.insert_many([dict(s) for s in SEED_HISTORY])
 except Exception:
     mongo_connected = False
-    print(f"ℹ️ MongoDB not reachable at {MONGO_URI}. Using local document storage (MongoDB-Ready).")
+    print(f"[INFO] MongoDB not reachable at {MONGO_URI}. Using local document storage (MongoDB-Ready).")
 
 
 def _persist_local():
@@ -108,7 +116,7 @@ def save_chat_interaction(user_message: str, bot_reply: str, products_attached: 
         try:
             chat_collection.insert_one(dict(record))
         except Exception as e:
-            print(f"⚠️ Error saving to MongoDB: {e}")
+            print(f"[WARN] Error saving to MongoDB: {e}")
 
 
 def get_chat_history(limit: int = 15) -> List[Dict[str, Any]]:
